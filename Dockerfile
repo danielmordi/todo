@@ -11,6 +11,7 @@ RUN npm ci
 
 # Copy source and build compiled frontend bundle
 COPY . .
+ENV WAYFINDER_COMMAND="true"
 RUN npm run build
 
 # ===================================================
