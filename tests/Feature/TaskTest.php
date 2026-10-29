@@ -19,6 +19,19 @@ test('owner can view tasks index', function () {
     $response->assertOk();
 });
 
+test('new user with no clients or projects can view tasks index', function () {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)->get(route('tasks.index'));
+
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page
+        ->component('tasks/index')
+        ->has('projects', 0)
+        ->has('clients', 0)
+    );
+});
+
 test('owner can create a task under their project', function () {
     $user = User::factory()->create();
     $client = Client::factory()->create(['user_id' => $user->id]);

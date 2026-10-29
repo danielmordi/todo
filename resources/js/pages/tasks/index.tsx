@@ -38,6 +38,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { dashboard } from '@/routes';
+import clientsRoute from '@/routes/clients';
 import projectsRoute from '@/routes/projects';
 import tasksRoute from '@/routes/tasks';
 import type {
@@ -223,14 +224,34 @@ export default function TasksIndex({
                         </p>
                     </div>
 
-                    <Button onClick={() => setCreateTaskOpen(true)} className="gap-2" disabled={projects.length === 0}>
+                    <Button onClick={() => setCreateTaskOpen(true)} className="gap-2">
                         <Plus className="size-4" />
                         Create Task
                     </Button>
                 </div>
 
-                {/* Filter Toolbar */}
-                <Card className="border-border/80">
+                {projects.length === 0 ? (
+                    <Card className="flex flex-col items-center justify-center p-12 text-center border-dashed">
+                        <FolderKanban className="size-12 text-muted-foreground/50 mb-3" />
+                        <h3 className="text-lg font-semibold text-foreground">
+                            {clients.length === 0 ? 'No clients or projects yet' : 'No active projects yet'}
+                        </h3>
+                        <p className="text-sm text-muted-foreground max-w-md mt-1 mb-4">
+                            {clients.length === 0
+                                ? 'Tasks belong to projects under your clients. Start by adding your first client, then create a project to track tasks.'
+                                : 'Tasks must belong to a project. Create a project under your client to start tracking deliverables and deadlines.'}
+                        </p>
+                        <Button asChild className="gap-2">
+                            <Link href={clientsRoute.index.url()}>
+                                <Plus className="size-4" />
+                                {clients.length === 0 ? 'Add First Client' : 'Manage Clients & Projects'}
+                            </Link>
+                        </Button>
+                    </Card>
+                ) : (
+                    <>
+                        {/* Filter Toolbar */}
+                        <Card className="border-border/80">
                     <CardHeader className="pb-3">
                         <div className="flex items-center justify-between">
                             <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -372,7 +393,32 @@ export default function TasksIndex({
                                 {tasks.data.length === 0 ? (
                                     <tr>
                                         <td colSpan={7} className="py-12 text-center text-sm text-muted-foreground">
-                                            No tasks found matching your filters.
+                                            {hasActiveFilters ? (
+                                                <div className="flex flex-col items-center justify-center gap-2">
+                                                    <span>No tasks found matching your filters.</span>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={handleResetFilters}
+                                                        className="h-8 gap-1 text-xs"
+                                                    >
+                                                        <RotateCcw className="size-3.5" />
+                                                        Reset Filters
+                                                    </Button>
+                                                </div>
+                                            ) : (
+                                                <div className="flex flex-col items-center justify-center gap-2">
+                                                    <span>No tasks created yet.</span>
+                                                    <Button
+                                                        size="sm"
+                                                        onClick={() => setCreateTaskOpen(true)}
+                                                        className="h-8 gap-1.5 text-xs mt-1"
+                                                    >
+                                                        <Plus className="size-3.5" />
+                                                        Create Your First Task
+                                                    </Button>
+                                                </div>
+                                            )}
                                         </td>
                                     </tr>
                                 ) : (
@@ -511,6 +557,8 @@ export default function TasksIndex({
                         </div>
                     )}
                 </div>
+                    </>
+                )}
             </div>
 
             {/* Create Task Dialog */}
@@ -519,10 +567,35 @@ export default function TasksIndex({
                     <DialogHeader>
                         <DialogTitle>Create Task</DialogTitle>
                         <DialogDescription>
-                            Assign a task to any client project.
+                            {projects.length === 0
+                                ? 'A project is required to create and assign tasks.'
+                                : 'Assign a task to any client project.'}
                         </DialogDescription>
                     </DialogHeader>
-                    <form onSubmit={handleCreateTaskSubmit} className="space-y-4">
+                    {projects.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-6 text-center">
+                            <div className="flex size-12 items-center justify-center rounded-full bg-muted mb-3">
+                                <FolderKanban className="size-6 text-muted-foreground" />
+                            </div>
+                            <h3 className="text-base font-semibold text-foreground">Project Required</h3>
+                            <p className="text-sm text-muted-foreground mt-1 max-w-xs">
+                                {clients.length === 0
+                                    ? 'Tasks must belong to a project. Create your first client and project to begin tracking tasks.'
+                                    : 'Tasks must belong to a project. Add a project under one of your clients to begin adding tasks.'}
+                            </p>
+                            <div className="mt-5 flex gap-2">
+                                <Button type="button" variant="outline" onClick={() => setCreateTaskOpen(false)}>
+                                    Cancel
+                                </Button>
+                                <Button asChild>
+                                    <Link href={clientsRoute.index.url()} onClick={() => setCreateTaskOpen(false)}>
+                                        {clients.length === 0 ? 'Add First Client' : 'Go to Clients'}
+                                    </Link>
+                                </Button>
+                            </div>
+                        </div>
+                    ) : (
+                        <form onSubmit={handleCreateTaskSubmit} className="space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="create-task-project">Project *</Label>
                             <Select
@@ -645,6 +718,7 @@ export default function TasksIndex({
                             </Button>
                         </DialogFooter>
                     </form>
+                    )}
                 </DialogContent>
             </Dialog>
 
