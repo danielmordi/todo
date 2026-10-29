@@ -3,6 +3,11 @@ set -e
 
 echo "==> [Laravel Entrypoint] Starting initialization tasks..."
 
+if [ -z "${APP_KEY}" ]; then
+    echo "==> Generate Laravel Application Key..."
+    php artisan key:generate --no-interaction || true
+fi
+
 # Ensure storage symlink exists
 if [ ! -L /var/www/html/public/storage ]; then
     echo "==> [Laravel Entrypoint] Creating storage symlink..."
