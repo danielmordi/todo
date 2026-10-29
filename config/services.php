@@ -32,6 +32,10 @@ return [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
+            'webhook_url' => env('SLACK_WEBHOOK_URL'),
+            'notify_on_task_created' => env('SLACK_NOTIFY_ON_TASK_CREATED', false),
+            'reminder_time' => env('SLACK_REMINDER_TIME', '09:00'),
+            'reminder_days' => env('SLACK_REMINDER_DAYS', 'daily'),
         ],
     ],
 

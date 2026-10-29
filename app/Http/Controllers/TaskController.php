@@ -2,17 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\TaskPriority;
 use App\Enums\TaskStatus;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Http\Requests\UpdateTaskStatusRequest;
 use App\Models\Project;
 use App\Models\Task;
+use App\Notifications\Channels\SlackChannel;
+use App\Notifications\TaskCreatedNotification;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Notification;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -88,7 +90,13 @@ class TaskController extends Controller
     {
         Gate::authorize('create', Task::class);
 
-        Task::create($request->validated());
+        $task = Task::create($request->validated());
+
+        if (config('services.slack.notifications.notify_on_task_created')) {
+            $task->loadMissing(['project.client']);
+            Notification::route(SlackChannel::class, null)
+                ->notify(new TaskCreatedNotification($task));
+        }
 
         return back();
     }
